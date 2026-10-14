@@ -208,7 +208,7 @@ def test_the_build_runs_without_a_database_route(monkeypatch):
 # ---- validate -------------------------------------------------------------------
 
 def test_validate_is_contracts_plus_kb_dry_run_plus_business_truth(monkeypatch):
-    _, mods = fresh(monkeypatch)
+    _, mods = fresh(monkeypatch, DATABASE_URL="postgresql://horizons:horizons@horizons-postgres:5432/horizons")
     v = mods["validate"]
     seen = []
 

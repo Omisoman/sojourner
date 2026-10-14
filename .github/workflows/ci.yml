@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.28"
+      - uses: oven-sh/setup-bun@v2
+      # The path override (../new-horizons) is for local development; CI
+      # resolves new-horizons from its git URL.
+      - name: uv sync
+        run: uv sync --no-sources
+      - name: pytest
+        run: uv run pytest -q -m "not model and not stack"
+      - name: generated files match their generators
+        run: |
+          uv run python scripts/core-compile.py --check
+          uv run python scripts/brand-sync.py --check
+          uv run python scripts/book-covers.py --check
+      - name: TUI
+        working-directory: infra/tui
+        run: bun test
+      - name: client-free
+        run: make client-free

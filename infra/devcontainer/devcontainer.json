@@ -1,0 +1,15 @@
+{
+  "name": "Sojourner tier-1 sandbox",
+  "dockerComposeFile": "../compose/docker-compose.yml",
+  "service": "tier1",
+  "workspaceFolder": "/workspace/project",
+  "overrideCommand": false,
+  "postAttachCommand": "opencode",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "sh"
+      }
+    }
+  }
+}

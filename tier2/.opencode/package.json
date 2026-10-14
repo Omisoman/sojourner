@@ -1,0 +1,10 @@
+{
+  "name": "sojourner-ops-opencode-config",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tier-2 operator console config — read-only at runtime like tier-1's (OpenCode needs node_modules/bun.lock present before first load; make demo2-build installs them).",
+  "dependencies": {
+    "@opencode-ai/plugin": "1.18.30"
+  }
+}

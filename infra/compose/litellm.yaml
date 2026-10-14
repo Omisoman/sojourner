@@ -1,0 +1,25 @@
+# Claude lane gateway — presents ONE OpenAI-compatible endpoint to the agents,
+# so nothing in agent code learns a provider SDK (repo hard rule) and the
+# Anthropic key never enters a tier container.
+#
+# Model ids here are what the surfaces list in LLM_MODELS.
+model_list:
+  - model_name: claude-opus-5
+    litellm_params:
+      model: anthropic/claude-opus-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-sonnet-5
+    litellm_params:
+      model: anthropic/claude-sonnet-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: anthropic/claude-haiku-4-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+litellm_settings:
+  drop_params: true       # the harness sends Ollama-shaped extras; ignore them
+  request_timeout: 180

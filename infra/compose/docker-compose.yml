@@ -1,0 +1,219 @@
+# Sojourner — two governed dev tiers working on new-horizons, and the
+# staging copy of the app they ship. No egress anywhere: every container that
+# runs agent-written or agent-driven code sits on internal-only networks.
+#
+#   tier-net   tier1 <-> tier2 (+ llm-proxy)
+#   ops-net    tier2 <-> gitea / ntfy / caddy / staging (+ llm-proxy)
+#   horizons-db   tier2 + staging -> new-horizons' Postgres. EXTERNAL and
+#              internal: New Horizons' own compose owns the container, the volume and
+#              this network (`make db-up` there, folded into `make demo2-up`),
+#              so both repos write ONE audit chain — the deploy events its
+#              Changes page reads.
+#
+# Host Ollama: internal networks block the host-gateway, so a single-purpose
+# socat proxy (llm-proxy) bridges to host.docker.internal:11434 and nothing
+# else. caddy is the only published port (staging on :8080).
+name: sojourner
+
+x-governance: &governance
+  user: agent
+  read_only: true
+  tmpfs:
+    # exec is required: OpenCode's TUI extracts a native render library into
+    # $TMPDIR. The real walls stay: ro rootfs, cap_drop, no egress.
+    - /tmp:exec,mode=1777
+    - /home/agent:exec,mode=1777,size=1073741824
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges]
+  restart: unless-stopped
+
+services:
+  # The tiers' ONLY route to a model. Upstream is env-driven so the same stack
+  # serves the laptop (host Ollama) or a rented GPU box without touching a tier:
+  #   LLM_UPSTREAM=host.docker.internal:11434   (local, default)
+  #   LLM_UPSTREAM=gpu-box.internal:8000        (rented vLLM, plain HTTP)
+  # A TLS endpoint (Claude) cannot go through socat — it needs Host rewriting,
+  # so that lane runs the `litellm` service below instead.
+  llm-proxy:
+    image: alpine/socat:1.8.0.0
+    container_name: sojourner-llm-proxy
+    command:
+      - "TCP-LISTEN:11434,fork,reuseaddr"
+      - "TCP:${LLM_UPSTREAM:-host.docker.internal:11434}"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks: [tier-net, ops-net, llm-egress]
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges]
+
+  # Claude lane (profile: claude). One OpenAI-compatible surface in front of
+  # Anthropic, so agent code keeps speaking the only protocol it knows and the
+  # API key lives here — never in a tier. This is the single egress point for
+  # that lane, exactly as llm-proxy is for the others.
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: sojourner-litellm
+    profiles: ["claude"]
+    command: ["--config", "/etc/litellm/config.yaml", "--port", "4000"]
+    environment:
+      # Soft default on purpose: compose interpolates the whole file before it
+      # filters profiles, so a required-variable marker here would break plain
+      # `make demo2-up` for every other lane. The gateway fails loudly at
+      # runtime if the key is empty, and llm-target.sh gates the claude lane.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sojourner-gateway-key}
+    volumes:
+      - ./litellm.yaml:/etc/litellm/config.yaml:ro
+    networks: [tier-net, ops-net, llm-egress]
+    restart: unless-stopped
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges]
+
+  tier1:
+    <<: *governance
+    build:
+      context: ../..
+      dockerfile: tier1/Dockerfile
+      additional_contexts:
+        horizons: ../../../new-horizons
+        horizons-data: ../../../new-horizons/data
+    image: sojourner-tier:latest
+    container_name: sojourner-tier1
+    environment:
+      AGENT_TIER: "1"
+      AUDIT_DIR: /var/log/sojourner-audit
+      A2A_TIER2_URL: http://tier2:9000
+      # the ops catalog doubles as an OpenCode config dir: commands and skills
+      # tier-2 publishes are native here on the next `opencode` start
+      OPENCODE_CONFIG_DIR: /workspace/catalog
+      SOJOURNER_WRITE_ROOT: /workspace/project     # path-guard
+    env_file: [tier1.env]          # never receives Gitea, database or deploy credentials
+    networks: [tier-net]
+    volumes:
+      - tier1-workspace:/workspace
+      - ../../tier1/.opencode:/workspace/.opencode:ro
+      # SAME config dir, mounted again INSIDE the worktree. OpenCode walks up
+      # from the cwd only as far as the git worktree root (/workspace/project),
+      # so the mount above is invisible to it: without this the agent runs
+      # with none of its skills and none of its personas. Excluded in the
+      # clone's .git/info/exclude, so it never reaches a patch or a PR.
+      - ../../tier1/.opencode:/workspace/project/.opencode:ro
+      - ../../tier1/AGENTS.md:/workspace/AGENTS.md:ro
+      - ../../tier1/core.json:/workspace/core.json:ro   # the record (make core)
+      - ../../tier1/docs:/workspace/docs:ro
+      - ../tui:/opt/sojourner/tui:ro          # the one TUI plugin (both tiers)
+      - catalog:/workspace/catalog:ro         # tier-2 writes, tier-1 reads
+      - tier1-audit:/var/log/sojourner-audit
+    depends_on: [tier2]            # tier-2 creates the catalog volume read-write first
+    working_dir: /workspace/project
+    command: ["sleep", "infinity"]
+
+  tier2:
+    <<: *governance
+    build:
+      context: ../..
+      dockerfile: tier2/Dockerfile
+    image: sojourner-tier2:latest
+    container_name: sojourner-tier2
+    environment:
+      AGENT_TIER: "2"
+      AUDIT_DIR: /var/log/sojourner-audit
+      OPENCODE_CONFIG_DIR: /workspace/catalog
+      SOJOURNER_WRITE_ROOT: /workspace/catalog     # path-guard: the console writes only here
+    env_file: [tier2.env]
+    networks: [tier-net, ops-net, horizons-db]
+    volumes:
+      - tier2-workspace:/workspace
+      # operator console (make demo2-ops): its own OpenCode config, same TUI
+      - ../../tier2/.opencode:/workspace/.opencode:ro
+      - ../../tier2/AGENTS.md:/workspace/AGENTS.md:ro
+      - ../../tier2/core.json:/workspace/core.json:ro   # the record (make core)
+      - ../../tier1/docs:/workspace/docs:ro   # the books, as tier-1 reads them
+      - ../tui:/opt/sojourner/tui:ro
+      - catalog:/workspace/catalog
+      - tier2-audit:/var/log/sojourner-audit
+      - staging-src:/srv/staging              # deploy_staging writes here …
+      - staging-run:/srv/staging-run:ro       # … and waits for staging to serve it
+    depends_on: [gitea, ntfy, caddy, staging]
+    expose: ["9000"]
+    entrypoint: ["/usr/local/bin/tier-entrypoint.sh"]
+    command: ["/opt/venv/bin/python", "/opt/sojourner/tier2/server.py"]
+
+  # The deployed app: a second Streamlit of new-horizons, running the
+  # commit tier-2 deployed (/srv/staging/app, read-only here) — the baked
+  # baseline until the first deploy. staging-run.sh restarts it whenever the
+  # deploy stamp changes, so a deploy needs no docker socket anywhere near the
+  # agents. Same image as the tiers; agent-written code, so internal networks
+  # only — caddy publishes it.
+  staging:
+    image: sojourner-tier2:latest
+    container_name: sojourner-staging
+    user: agent
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777
+      - /home/agent:mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges]
+    env_file: [staging.env]
+    networks: [ops-net, horizons-db]
+    volumes:
+      - staging-src:/srv/staging:ro
+      - staging-run:/srv/staging-run
+      - staging-farm:/srv/farm                # HORIZONS_DATA: data survives deploys
+    entrypoint: ["/usr/local/bin/staging-run.sh"]
+    restart: unless-stopped
+
+  gitea:
+    image: gitea/gitea:1.22
+    container_name: sojourner-gitea
+    environment:
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__server__ROOT_URL: http://gitea:3000/
+      GITEA__server__HTTP_PORT: "3000"
+    networks: [ops-net]
+    volumes:
+      - gitea-data:/data
+
+  ntfy:
+    image: binwiederhier/ntfy:v2.11.0
+    container_name: sojourner-ntfy
+    command: ["serve", "--base-url", "http://ntfy"]
+    networks: [ops-net]
+
+  caddy:
+    image: caddy:2.8
+    container_name: sojourner-caddy
+    # ops-net is internal, and Docker publishes no host port for a container
+    # that sits ONLY on an internal network (measured: the bind silently
+    # answers nothing). staging-view is the second, routable network that
+    # makes http://localhost:8080 work — the tiers and staging touch neither.
+    networks: [ops-net, staging-view]
+    ports:
+      - "${STAGING_PORT:-8080}:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+
+networks:
+  tier-net:
+    internal: true
+  ops-net:
+    internal: true
+  horizons-db:
+    external: true
+    name: horizons-db        # internal; created by new-horizons' compose
+  llm-egress: {}          # NAT network for llm-proxy / litellm ONLY (host upstream)
+  staging-view: {}        # host -> caddy ONLY, so the room can open staging
+
+volumes:
+  catalog:                # ops catalog: commands/skills/books/prompts tier-2 publishes
+  tier1-workspace:
+  tier2-workspace:
+  tier1-audit:
+  tier2-audit:
+  gitea-data:
+  staging-src:            # the deployed tree (+ .prev for rollback)
+  staging-run:            # what staging is serving right now
+  staging-farm:           # staging's data dir — deploys never touch it

@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "source": "ac-mark.svg \u00b7 ac-wordmark.svg",
+  "palette": {"chevron": "#878787", "ink": "#f5f5f5"},
+  "full": {"cols": 74, "rows": [
+    [["chevron", "⠈⠳⣦⡀"], [null, "  "], ["ink", "⠠⠤⢤⡀⣠⠤⢤⡄⣠⠤⢤⡀⣤⠤⢤⡀⠠⢼⡧⠄"], [null, " "], ["ink", "⢬⡅"], [null, " "], ["ink", "⠤⢤⣤⠄⠠⠤⢤⡀⠠⢼⡧⠄"], [null, " "], ["ink", "⢬⡅"], [null, " "], ["ink", "⣠⠤⢤⡀⣤⠤⢤⡀⢀⣀⣀⡀⣠⠤⠤⠄⣠⠤⢤⡀⢠⣄⠤⠄⣠⠤⢤⡀"]],
+    [["chevron", "⢀⡴⠟⠁"], [null, "  "], ["ink", "⠺⠭⠽⠇⢙⣒⣺⠇⠻⠭⠭⠁⠿"], [null, " "], ["ink", "⠸⠇"], [null, " "], ["ink", "⠸⠇"], [null, " "], ["ink", "⠠⠼⠧⠄⠴⠿⠥⠄⠺⠭⠽⠇"], [null, " "], ["ink", "⠸⠇"], [null, " "], ["ink", "⠠⠼⠧⠄⠻⠤⠼⠃⠿"], [null, " "], ["ink", "⠸⠇"], [null, "    "], ["ink", "⠻⠤⠤⠄⠻⠤⠼⠃⠸⠇"], [null, "  "], ["ink", "⠻⠭⠭⠁"]]
+  ]},
+  "compact": {"cols": 18, "rows": [
+    [["chevron", "⠈⠳⣦⡀"], [null, "  "], ["ink", "⠠⠤⢤⡀⢀⣀⣀⡀⣠⠤⠤⠄"]],
+    [["chevron", "⢀⡴⠟⠁"], [null, "  "], ["ink", "⠺⠭⠽⠇"], [null, "    "], ["ink", "⠻⠤⠤⠄"]]
+  ]},
+  "ascii": {"full": {"cols": 19, "rows": [
+    [["chevron", ">"], [null, " "], ["ink", "agentization-core"]],
+    [[null, "                   "]]
+  ]}, "compact": {"cols": 5, "rows": [
+    [["chevron", ">"], [null, " "], ["ink", "a-c"]],
+    [[null, "     "]]
+  ]}}
+}

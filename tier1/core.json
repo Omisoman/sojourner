@@ -1,0 +1,210 @@
+{
+  "schema": "sojourner/terminal-agent/1",
+  "id": "sojourner-tier1-dev",
+  "tier": 1,
+  "name": "SOJOURNER DEV AGENT",
+  "role": "developer sandbox",
+  "version": "1.0.0",
+  "platform": "AGENTIZATION-CORE DEV",
+  "workspace": {
+    "name": "new-horizons",
+    "dir": "/workspace/project",
+    "write_root": "/workspace/project",
+    "kind": "python-project"
+  },
+  "inference": {
+    "default": "ollama/qwen3:8b",
+    "provider": {
+      "id": "ollama",
+      "name": "Ollama (host)",
+      "npm": "@ai-sdk/openai-compatible",
+      "base_url_env": "LLM_BASE_URL"
+    },
+    "models": {
+      "qwen3:8b": "Qwen3 8B (default, strongest Arabic)",
+      "llama3.1:8b": "Llama 3.1 8B",
+      "deepseek-r1:8b": "DeepSeek-R1 8B (reasoning only — native tool calls unreliable)",
+      "deepseek-r1-tools:8b": "DeepSeek-R1 8B qwen3-template (reasoning only — emits fenced JSON, not tool_call tags)"
+    },
+    "residency": "one 8B model resident at a time",
+    "local_always": [
+      "bge-m3 (embeddings)",
+      "qwen3-vl:4b (vision)"
+    ]
+  },
+  "agents": [
+    {
+      "name": "developer",
+      "mode": "primary",
+      "file": "agents/developer.md"
+    },
+    {
+      "name": "reviewer",
+      "mode": "subagent",
+      "file": "agents/reviewer.md"
+    }
+  ],
+  "default_agent": "developer",
+  "catalog": {
+    "path": "/workspace/catalog",
+    "role": "consumer",
+    "adds": [
+      "prompt"
+    ],
+    "mine": "/workspace/.sojourner"
+  },
+  "books": "/workspace/docs/books",
+  "documents": [
+    "/workspace/AGENTS.md",
+    "/workspace/docs/*.md",
+    "/workspace/project/*.md",
+    "/workspace/project/docs/*.md"
+  ],
+  "connections": [
+    {
+      "id": "tier2",
+      "kind": "a2a",
+      "url_env": "A2A_TIER2_URL",
+      "url": "http://tier2:9000",
+      "role": "tier1-dev",
+      "token_env": "A2A_BEARER_TIER1"
+    },
+    {
+      "id": "llm",
+      "kind": "openai-compatible",
+      "url_env": "LLM_BASE_URL",
+      "lane_env": "LLM_PROVIDER",
+      "lane_url_env": "LLM_LANE_URL"
+    },
+    {
+      "id": "catalog",
+      "kind": "volume",
+      "path": "/workspace/catalog",
+      "access": "ro"
+    },
+    {
+      "id": "audit",
+      "kind": "volume",
+      "path": "/var/log/sojourner-audit",
+      "access": "rw"
+    }
+  ],
+  "permissions": {
+    "edit": {
+      "*": "deny",
+      "/workspace/project/**": "allow",
+      "src/**": "allow",
+      "tests/**": "allow",
+      "docs/**": "allow",
+      "*.py": "allow",
+      "*.md": "allow",
+      "*.yaml": "allow",
+      "*.json": "allow",
+      "*.toml": "allow"
+    },
+    "bash": {
+      "*": "deny",
+      "uv run *": "allow",
+      "make test*": "allow",
+      "make lint*": "allow",
+      "make client-free*": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git show*": "allow",
+      "git rev-parse*": "allow",
+      "git format-patch*": "allow",
+      "git add *": "allow",
+      "git commit*": "allow",
+      "git branch*": "allow",
+      "git checkout*": "allow",
+      "ls*": "allow",
+      "cat *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "grep *": "allow",
+      "rg *": "allow",
+      "find *": "allow",
+      "wc *": "allow",
+      "mkdir *": "allow"
+    },
+    "task": "deny",
+    "webfetch": "deny"
+  },
+  "guards": {
+    "path_guard_root": "/workspace/project",
+    "read_only": [
+      "/workspace/.opencode",
+      "/workspace/project/.opencode",
+      "/workspace/AGENTS.md",
+      "/workspace/docs",
+      "/workspace/core.json"
+    ],
+    "network": "no egress (tier-net internal; llm-proxy is the only route)"
+  },
+  "approvals": {
+    "can_approve": false,
+    "can_request": true,
+    "rules": "/opt/sojourner/horizons/src/new_horizons/shared/rules/rules.yaml"
+  },
+  "audit": {
+    "channel": "CH-1",
+    "kind": "tool log",
+    "version": "v1",
+    "file": "/var/log/sojourner-audit/opencode-tools.jsonl"
+  },
+  "home": {
+    "placeholders": [
+      "Add a fish-count KPI to the Overview page",
+      "Rename the Patterns page title to People and patterns",
+      "Run /arch-check and fix what it finds"
+    ],
+    "quick_actions": [
+      {
+        "title": "Rules",
+        "description": "AGENTS.md — boundaries and working rules",
+        "category": "Read",
+        "action": {
+          "type": "view",
+          "path": "/workspace/AGENTS.md"
+        }
+      },
+      {
+        "title": "Books",
+        "description": "architecture · coding standards · release playbook",
+        "category": "Read",
+        "action": {
+          "type": "settings",
+          "section": "books"
+        }
+      },
+      {
+        "title": "Run the tests",
+        "description": "uv run pytest -q",
+        "category": "Do",
+        "action": {
+          "type": "prompt",
+          "text": "Run uv run pytest -q and summarize any failures."
+        }
+      },
+      {
+        "title": "/arch-check",
+        "description": "import contracts: shared ⟂ app, views ⟂ views",
+        "category": "Do",
+        "action": {
+          "type": "prompt",
+          "text": "/arch-check "
+        }
+      },
+      {
+        "title": "Request a deploy",
+        "description": "/request-deploy — approval-gated",
+        "category": "Do",
+        "action": {
+          "type": "prompt",
+          "text": "/request-deploy "
+        }
+      }
+    ]
+  }
+}

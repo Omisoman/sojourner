@@ -1,0 +1,51 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "sojourner",
+  "model": "ollama/qwen3:8b",
+  "default_agent": "operator",
+  "autoupdate": false,
+  "share": "disabled",
+  "disabled_providers": ["opencode"],
+  "plugin": ["/opt/sojourner/tui/server/audit-log.ts", "/opt/sojourner/tui/server/path-guard.ts"],
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (host)",
+      "options": {
+        "baseURL": "{env:LLM_BASE_URL}"
+      },
+      "models": {
+        "qwen3:8b": { "name": "Qwen3 8B (default, strongest Arabic)" },
+        "llama3.1:8b": { "name": "Llama 3.1 8B" },
+        "deepseek-r1:8b": { "name": "DeepSeek-R1 8B (reasoning only — native tool calls unreliable)" },
+        "deepseek-r1-tools:8b": { "name": "DeepSeek-R1 8B qwen3-template (reasoning only — emits fenced JSON, not tool_call tags)" }
+      }
+    }
+  },
+  "permission": {
+    "edit": {
+      "*": "deny",
+      "/workspace/catalog/**": "allow"
+    },
+    "bash": {
+      "*": "deny",
+      "/opt/venv/bin/python /opt/sojourner/tier2/ops_queue.py*": "allow",
+      "python /opt/sojourner/tier2/ops_queue.py*": "allow",
+      "/opt/venv/bin/python /opt/sojourner/tier2/approve.py *": "ask",
+      "python /opt/sojourner/tier2/approve.py *": "ask",
+      "/opt/venv/bin/python /opt/sojourner/tier2/audit_verify.py*": "allow",
+      "python /opt/sojourner/tier2/audit_verify.py*": "allow",
+      "ls*": "allow",
+      "cat *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "grep *": "allow",
+      "wc *": "allow",
+      "find /workspace/catalog*": "allow",
+      "mkdir /workspace/catalog/*": "allow"
+    },
+    "task": "deny",
+    "webfetch": "deny"
+  },
+  "instructions": ["/workspace/AGENTS.md"]
+}

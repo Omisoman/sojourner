@@ -1,0 +1,11 @@
+{
+  "name": "sojourner-opencode-config",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Baked at image build time — the directory is read-only at runtime (OpenCode needs node_modules/bun.lock present before first load).",
+  "dependencies": {
+    "@a2a-js/sdk": "1.1.0",
+    "@opencode-ai/plugin": "1.18.30"
+  }
+}

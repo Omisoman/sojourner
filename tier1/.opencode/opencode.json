@@ -1,0 +1,68 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "sojourner",
+  "model": "ollama/qwen3:8b",
+  "default_agent": "developer",
+  "autoupdate": false,
+  "share": "disabled",
+  "disabled_providers": ["opencode"],
+  "plugin": ["/opt/sojourner/tui/server/audit-log.ts", "/opt/sojourner/tui/server/path-guard.ts"],
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (host)",
+      "options": {
+        "baseURL": "{env:LLM_BASE_URL}"
+      },
+      "models": {
+        "qwen3:8b": { "name": "Qwen3 8B (default, strongest Arabic)" },
+        "llama3.1:8b": { "name": "Llama 3.1 8B" },
+        "deepseek-r1:8b": { "name": "DeepSeek-R1 8B (reasoning only — native tool calls unreliable)" },
+        "deepseek-r1-tools:8b": { "name": "DeepSeek-R1 8B qwen3-template (reasoning only — emits fenced JSON, not tool_call tags)" }
+      }
+    }
+  },
+  "permission": {
+    "edit": {
+      "*": "deny",
+      "/workspace/project/**": "allow",
+      "src/**": "allow",
+      "tests/**": "allow",
+      "docs/**": "allow",
+      "*.py": "allow",
+      "*.md": "allow",
+      "*.yaml": "allow",
+      "*.json": "allow",
+      "*.toml": "allow"
+    },
+    "bash": {
+      "*": "deny",
+      "uv run *": "allow",
+      "make test*": "allow",
+      "make lint*": "allow",
+      "make client-free*": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git show*": "allow",
+      "git rev-parse*": "allow",
+      "git format-patch*": "allow",
+      "git add *": "allow",
+      "git commit*": "allow",
+      "git branch*": "allow",
+      "git checkout*": "allow",
+      "ls*": "allow",
+      "cat *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "grep *": "allow",
+      "rg *": "allow",
+      "find *": "allow",
+      "wc *": "allow",
+      "mkdir *": "allow"
+    },
+    "task": "deny",
+    "webfetch": "deny"
+  },
+  "instructions": ["/workspace/AGENTS.md"]
+}

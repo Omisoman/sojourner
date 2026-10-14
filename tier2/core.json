@@ -1,0 +1,181 @@
+{
+  "schema": "sojourner/terminal-agent/1",
+  "id": "sojourner-tier2-ops",
+  "tier": 2,
+  "name": "SOJOURNER OPS AGENT",
+  "role": "operator console",
+  "version": "1.0.0",
+  "platform": "AGENTIZATION-CORE DEV",
+  "workspace": {
+    "name": "sojourner-ops",
+    "dir": "/workspace",
+    "write_root": "/workspace/catalog",
+    "kind": "ops-console"
+  },
+  "inference": {
+    "default": "ollama/qwen3:8b",
+    "provider": {
+      "id": "ollama",
+      "name": "Ollama (host)",
+      "npm": "@ai-sdk/openai-compatible",
+      "base_url_env": "LLM_BASE_URL"
+    },
+    "models": {
+      "qwen3:8b": "Qwen3 8B (default, strongest Arabic)",
+      "llama3.1:8b": "Llama 3.1 8B",
+      "deepseek-r1:8b": "DeepSeek-R1 8B (reasoning only — native tool calls unreliable)",
+      "deepseek-r1-tools:8b": "DeepSeek-R1 8B qwen3-template (reasoning only — emits fenced JSON, not tool_call tags)"
+    },
+    "residency": "one 8B model resident at a time",
+    "local_always": [
+      "bge-m3 (embeddings)",
+      "qwen3-vl:4b (vision)"
+    ]
+  },
+  "agents": [
+    {
+      "name": "operator",
+      "mode": "primary",
+      "file": "agents/operator.md"
+    }
+  ],
+  "default_agent": "operator",
+  "catalog": {
+    "path": "/workspace/catalog",
+    "role": "curator",
+    "publishes": [
+      "command",
+      "skill",
+      "book",
+      "prompt"
+    ],
+    "mine": "/workspace/.sojourner"
+  },
+  "books": "/workspace/docs/books",
+  "documents": [
+    "/workspace/AGENTS.md",
+    "/opt/sojourner/horizons/src/new_horizons/shared/rules/rules.yaml",
+    "/opt/sojourner/tier2/agents/ops/SYSTEM.md",
+    "/workspace/docs/*.md"
+  ],
+  "connections": [
+    {
+      "id": "queue",
+      "kind": "a2a",
+      "url_env": "A2A_TIER2_URL",
+      "url": "http://localhost:9000",
+      "role": "admin",
+      "secret_env": "A2A_JWT_SECRET"
+    },
+    {
+      "id": "llm",
+      "kind": "openai-compatible",
+      "url_env": "LLM_BASE_URL",
+      "lane_env": "LLM_PROVIDER",
+      "lane_url_env": "LLM_LANE_URL"
+    },
+    {
+      "id": "catalog",
+      "kind": "volume",
+      "path": "/workspace/catalog",
+      "access": "rw"
+    },
+    {
+      "id": "audit",
+      "kind": "volume",
+      "path": "/var/log/sojourner-audit",
+      "access": "rw"
+    }
+  ],
+  "permissions": {
+    "edit": {
+      "*": "deny",
+      "/workspace/catalog/**": "allow"
+    },
+    "bash": {
+      "*": "deny",
+      "/opt/venv/bin/python /opt/sojourner/tier2/ops_queue.py*": "allow",
+      "python /opt/sojourner/tier2/ops_queue.py*": "allow",
+      "/opt/venv/bin/python /opt/sojourner/tier2/approve.py *": "ask",
+      "python /opt/sojourner/tier2/approve.py *": "ask",
+      "/opt/venv/bin/python /opt/sojourner/tier2/audit_verify.py*": "allow",
+      "python /opt/sojourner/tier2/audit_verify.py*": "allow",
+      "ls*": "allow",
+      "cat *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "grep *": "allow",
+      "wc *": "allow",
+      "find /workspace/catalog*": "allow",
+      "mkdir /workspace/catalog/*": "allow"
+    },
+    "task": "deny",
+    "webfetch": "deny"
+  },
+  "guards": {
+    "path_guard_root": "/workspace/catalog",
+    "read_only": [
+      "/workspace/.opencode",
+      "/workspace/AGENTS.md",
+      "/workspace/docs",
+      "/workspace/core.json"
+    ],
+    "network": "no egress (tier-net, ops-net and horizons-db internal; llm-proxy is the only route)"
+  },
+  "approvals": {
+    "can_approve": true,
+    "can_request": false,
+    "rules": "/opt/sojourner/horizons/src/new_horizons/shared/rules/rules.yaml"
+  },
+  "audit": {
+    "channel": "CH-2",
+    "kind": "hash chain",
+    "version": "v1",
+    "file": "/var/log/sojourner-audit/tier2-audit.jsonl",
+    "file_env": "AUDIT_JSONL"
+  },
+  "home": {
+    "placeholders": [
+      "Which deploys are waiting for approval?",
+      "Verify the audit chain",
+      "Draft a skill for release notes"
+    ],
+    "quick_actions": [
+      {
+        "title": "{project}",
+        "description": "{dir}",
+        "category": "Workspace",
+        "action": {
+          "type": "none"
+        }
+      },
+      {
+        "title": "Catalog",
+        "description": "{catalog} · {published} published",
+        "category": "Workspace",
+        "action": {
+          "type": "settings",
+          "section": "commands"
+        }
+      },
+      {
+        "title": "Approvals waiting",
+        "description": "{waiting}",
+        "category": "Queue",
+        "action": {
+          "type": "settings",
+          "section": "requests"
+        }
+      },
+      {
+        "title": "Rules",
+        "description": "AGENTS.md",
+        "category": "Read",
+        "action": {
+          "type": "view",
+          "path": "/workspace/AGENTS.md"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "theme": "sojourner",
+  "plugin": ["/opt/sojourner/tui/sojourner-ui.tsx"],
+  "prompt": { "max_width": "auto" }
+}

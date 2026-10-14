@@ -1,0 +1,7 @@
+{
+  "name": "sojourner-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sojourner terminal-agent TUI for OpenCode 1.18.30 — one plugin, both tiers (AGENT_TIER picks the capabilities). Loaded by path from each tier's tui.json; no dependencies (solid-js and @opentui/solid resolve to OpenCode's own instances)."
+}

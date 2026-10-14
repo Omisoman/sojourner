@@ -20,6 +20,8 @@ the commit and go straight to the a2a_delegate call.
    - one imperative subject line, ≤ 72 chars, no AI attribution.
 3. Call the `a2a_delegate` tool with:
    `{"skill": "deploy", "summary": "<that commit subject>", "detail": $ARGUMENTS}`
+   If you did not commit in this turn, the summary is the latest commit's subject:
+   `git log -1 --format=%s` — never ask the operator for it.
    The tool attaches the patch, its sha256 and the diffstat — report the
    diffstat it prints so the operator sees exactly what is crossing over.
 4. Stream the task states as they arrive (submitted → working →

@@ -36,11 +36,17 @@ if ! tmux has-session -t "$SESSION" 2>/dev/null; then
   tmux new-session -d -s "$SESSION" -x "$cols" -y "$lines" "docker exec -it -w $DIR $CONTAINER opencode"
   tmux split-window -h -t "$SESSION" -l 40% "docker exec -it -w $DIR $CONTAINER sh"
   tmux set -t "$SESSION" mouse on
+  # black whatever the terminal's profile: every pane (the shell too) paints the
+  # TUI's bg, and tmux answers OpenCode's background probe with it
+  tmux set -t "$SESSION" window-style "bg=$(tok bg),fg=$(tok text)"
+  tmux set -t "$SESSION" window-active-style "bg=$(tok bg),fg=$(tok text)"
+  tmux set -t "$SESSION" pane-border-style "bg=$(tok bg),fg=$(tok border)"
+  tmux set -t "$SESSION" message-style "bg=$(tok bgElement),fg=$(tok accent)"
   tmux set -t "$SESSION" status-style "bg=$(tok bgElement),fg=$(tok text)"
   tmux set -t "$SESSION" status-left-length 60
   tmux set -t "$SESSION" status-left "#[fg=$(tok accent),bold] $LABEL · $DIR "
   tmux set -t "$SESSION" status-right ""
-  tmux set -t "$SESSION" pane-active-border-style "fg=$(tok accent)"
+  tmux set -t "$SESSION" pane-active-border-style "bg=$(tok bg),fg=$(tok accent)"
   tmux select-pane -t "$SESSION:0.0"
   tmux resize-pane -Z -t "$SESSION:0.0"
 fi

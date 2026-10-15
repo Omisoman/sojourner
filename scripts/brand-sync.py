@@ -6,7 +6,7 @@
 Sources — owned by new-horizons, the Agentization Core design system it
 ships; nothing here is drawn or traced:
 
-    app/design/tokens.json       the AC design tokens (black and white themes)
+    app/design/tokens.json       the AC design tokens (the black theme)
     app/static/ac-mark.svg       "> a-c", generated on the AC pixel grid
     app/static/ac-wordmark.svg   "> agentization-core", same grid
 
@@ -14,7 +14,8 @@ Targets (fully generated — edit the sources or the maps below, never these):
 
     tier{1,2}/.opencode/themes/sojourner.json   OpenCode theme: the role map of
         Agentization-Core/tui-themes' `console` theme (the OpenCode idiom),
-        coloured with the AC tokens — dark = black theme, light = white
+        coloured with the AC black theme — ONE variant, no dark/light pair, so
+        a light terminal (or a light macOS appearance) cannot flip the console
     infra/tui/brand/tokens.json                 the TUI palette, by role (dark)
     infra/tui/brand/mark.json                   the "> a-c" and "> agentization-core"
                                                 lockups as braille, 2 rows each
@@ -43,15 +44,15 @@ THEMES = [ROOT / "tier1" / ".opencode" / "themes" / "sojourner.json",
           ROOT / "tier2" / ".opencode" / "themes" / "sojourner.json"]
 TUI_BRAND = ROOT / "infra" / "tui" / "brand"
 
-# The AC mark's two inks (New Horizons' scripts/brand-marks.py: GRAY chevron, WHITE /
-# INK letters for dark / light surfaces).
+# The AC mark's two inks on a dark surface (New Horizons' scripts/brand-marks.py:
+# GRAY chevron, WHITE letters). The terminal agent is black only.
 CHEVRON = "#878787"
-INK = {"black": "#f5f5f5", "white": "#525252"}
+INK = {"black": "#f5f5f5"}
 # The AC tokens carry no blue; links and info keep the console theme's.
-INFO = {"black": "#6fa8ff", "white": "#1f5fbf"}
+INFO = {"black": "#6fa8ff"}
 
 # tui-themes/themes/console/opencode-theme.json: OpenCode role -> variant slot
-# (the theme writes `black_<slot>` / `white_<slot>`), copied verbatim.
+# (the theme writes `black_<slot>`), copied verbatim.
 CONSOLE_ROLES = {
     "primary": "accent", "secondary": "muted", "accent": "accent2", "error": "bad",
     "warning": "warn", "success": "good", "info": "info", "text": "text", "textMuted": "muted",
@@ -204,25 +205,24 @@ def braille_rows(grid: list[list[str | None]], role_of=lambda c: c) -> list[list
 
 # ---- renderers ---------------------------------------------------------------------
 
-def _variant(tok: dict, name: str) -> dict[str, str]:
-    c = tok["themes"][name]["colors"]
-    dark = name == "black"
+def _black(tok: dict) -> dict[str, str]:
+    c = tok["themes"]["black"]["colors"]
     return {
         "bg": c["bg"], "panel": c["card"], "element": c["muted"], "border": c["borderStrong"],
-        "rule": c["border"], "text": c["fgMuted"] if dark else c["fg"], "muted": c["fgSubtle"],
+        "rule": c["border"], "text": c["fgMuted"], "muted": c["fgSubtle"],
         "dim": c["locked"], "strong": c["fg"], "sel": c["border"],
-        "good": c["green"], "warn": c["amber"], "bad": c["red"], "info": INFO[name],
+        "good": c["green"], "warn": c["amber"], "bad": c["red"], "info": INFO["black"],
         "accent": c["fg"], "accent2": CHEVRON, "accentText": c["fg"],
-        "logo1": CHEVRON, "logo2": INK[name], "trace": c["locked"],
+        "logo1": CHEVRON, "logo2": INK["black"], "trace": c["locked"],
     }
 
 
 def render_opencode_theme(tok: dict) -> str:
-    defs = {}
-    for name in ("black", "white"):
-        v = _variant(tok, name)
-        defs.update({f"{name}_{slot}": v[slot] for slot in SLOTS})
-    theme = {role: {"dark": f"black_{slot}", "light": f"white_{slot}"} for role, slot in CONSOLE_ROLES.items()}
+    # Black, whatever the terminal says: a role given as a plain def name (not a
+    # {dark, light} pair) resolves the same in both of OpenCode's modes.
+    v = _black(tok)
+    defs = {f"black_{slot}": v[slot] for slot in SLOTS}
+    theme = {role: f"black_{slot}" for role, slot in CONSOLE_ROLES.items()}
     return json.dumps({"$schema": "https://opencode.ai/theme.json", "defs": defs, "theme": theme},
                       indent=2, ensure_ascii=False) + "\n"
 

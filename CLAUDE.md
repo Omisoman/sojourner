@@ -102,6 +102,11 @@ checkout `../new-horizons`). Offline, one MacBook Pro, 16 GB. MIT, synthetic.
   (both tiers: tui-themes' `console` roles in AC design tokens) and the TUI's
   `brand/{tokens,mark,chips}.json`, SAMPLED from New Horizons' generated `ac-mark.svg` /
   `ac-wordmark.svg` onto braille dots. Never trace or hand-draw a mark.
+- Black, forcefully: the theme has ONE variant (roles are plain def names, never a
+  `{dark, light}` pair — OpenCode picks its mode from the terminal's background, and a
+  light one flipped the console white under the plugin's black chrome); the plugin snaps
+  any `/themes` pick back to `tui.json`'s theme; `tier-attach.sh` paints every pane (the
+  shell too) the TUI's bg via tmux `window-style`. No light variant, anywhere.
 - Tests/lint: `make test` (records, patch channel, tier-2 tools, compose walls, lock parity,
   TUI, brand; `stack`-marked tests need the stack, `model` needs Ollama); `make lint` = core
   + brand + books `--check` + `make client-free`. CI runs `pytest -m "not model"` + lint.

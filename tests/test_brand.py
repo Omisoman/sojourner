@@ -33,26 +33,25 @@ def test_both_tiers_wear_the_same_theme():
     assert first == second
 
 
-def test_theme_roles_resolve_in_both_modes():
+def test_theme_is_black_in_both_modes():
+    """No {dark, light} pair anywhere: OpenCode picks its mode from the terminal's
+    background, and a light terminal must still get the black console."""
     theme = json.loads(brand_sync.THEMES[0].read_text(encoding="utf-8"))
     assert set(theme["theme"]) == set(brand_sync.CONSOLE_ROLES)
     for role, ref in theme["theme"].items():
-        assert set(ref) == {"dark", "light"}, role
-        assert ref["dark"] in theme["defs"] and ref["light"] in theme["defs"], role
+        assert isinstance(ref, str) and ref in theme["defs"], role
+    assert all(k.startswith("black_") for k in theme["defs"]), "a light variant crept back in"
     assert all(re.fullmatch(r"#[0-9a-f]{6}", v) for v in theme["defs"].values())
 
 
 def test_theme_is_the_ac_design_system():
-    """Monochrome primary (white on dark, ink on light), the AC chevron gray as
-    the second accent, status colours straight from the tokens."""
+    """Monochrome primary (white on black), the AC chevron gray as the second
+    accent, status colours straight from the tokens."""
     defs = json.loads(brand_sync.THEMES[0].read_text(encoding="utf-8"))["defs"]
-    tok = brand_sync.ac_tokens()["themes"]
-    for mode in ("black", "white"):
-        c = tok[mode]["colors"]
-        assert defs[f"{mode}_bg"] == c["bg"] and defs[f"{mode}_accent"] == c["fg"]
-        assert (defs[f"{mode}_good"], defs[f"{mode}_warn"], defs[f"{mode}_bad"]) == \
-            (c["green"], c["amber"], c["red"])
-        assert defs[f"{mode}_accent2"] == defs[f"{mode}_logo1"] == brand_sync.CHEVRON
+    c = brand_sync.ac_tokens()["themes"]["black"]["colors"]
+    assert defs["black_bg"] == c["bg"] and defs["black_accent"] == c["fg"]
+    assert (defs["black_good"], defs["black_warn"], defs["black_bad"]) == (c["green"], c["amber"], c["red"])
+    assert defs["black_accent2"] == defs["black_logo1"] == brand_sync.CHEVRON
 
 
 def test_tui_palette_is_the_role_set_palette_ts_reads():

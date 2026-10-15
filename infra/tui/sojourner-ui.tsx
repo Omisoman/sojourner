@@ -15,6 +15,7 @@
  * @opencode-ai/plugin 1.18.30; the OpenCode version is pinned in the image.
  */
 import type { TuiPlugin, TuiPluginApi, TuiPluginModule } from "@opencode-ai/plugin/tui";
+import { createEffect, createRoot } from "solid-js";
 import * as catalog from "./lib/catalog.ts";
 import { CAN, CORE, type QuickAction, SIG, TIER } from "./lib/env.ts";
 import { C } from "./lib/palette.ts";
@@ -77,6 +78,15 @@ const tui: TuiPlugin = async (api) => {
   const store = createStore(api);
   // The stock home tips would sit between the prompt tabs and the footer.
   api.kv.set("tips_hidden", true);
+  // Black, forcefully: the theme tui.json names is the only one — a pick in
+  // /themes snaps back — and it has no light variant (scripts/brand-sync.py).
+  // Deferred: the effect fires inside OpenCode's own set(), before it saves the
+  // pick, so an immediate set would leave the other theme in the kv store.
+  const pinned = api.tuiConfig.theme;
+  if (pinned) createRoot(() => createEffect(() => {
+    if (api.theme.ready && api.theme.selected !== pinned && api.theme.has(pinned))
+      queueMicrotask(() => api.theme.set(pinned));
+  }));
 
   api.route.register([
     { name: SETTINGS_ROUTE, render: ({ params }) => <SettingsPage api={api} store={store} params={params} /> },

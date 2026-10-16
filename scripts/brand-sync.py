@@ -295,7 +295,7 @@ def validate_mark(doc: object) -> list[str]:
             return
         rows, cols = var["rows"], var["cols"]
         if len(rows) > max_rows or cols > max_cols:
-            errs.append(f"{path}: {len(rows)}x{cols} exceeds budget {max_rows}x{max_cols}")
+            errs.append(f"{path}: {len(rows)}x{cols} is over the {max_rows}x{max_cols} budget")
         for i, row in enumerate(rows):
             if not (isinstance(row, list) and all(
                     isinstance(run, list) and len(run) == 2 and isinstance(run[1], str)

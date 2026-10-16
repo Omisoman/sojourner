@@ -13,7 +13,7 @@ ships; nothing here is drawn or traced:
 Targets (fully generated — edit the sources or the maps below, never these):
 
     tier{1,2}/.opencode/themes/sojourner.json   OpenCode theme: the role map of
-        Agentization-Core/tui-themes' `console` theme (the OpenCode idiom),
+        the Agentization Core tui-themes' `console` theme (the OpenCode idiom),
         coloured with the AC black theme — ONE variant, no dark/light pair, so
         a light terminal (or a light macOS appearance) cannot flip the console
     infra/tui/brand/tokens.json                 the TUI palette, by role (dark)

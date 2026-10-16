@@ -3,7 +3,7 @@
 Scope: the tier-1 developer sandbox, the tier-2 ops agent with its operator console, and
 the staging copy of the app they deploy. The app itself (its chat agent, read-only
 database role, document intake) is new-horizons — its threat model is in
-[that repository's SECURITY.md](https://github.com/omarsoman/new-horizons/blob/main/SECURITY.md).
+[that repository's SECURITY.md](https://github.com/Omisoman/new-horizons/blob/main/SECURITY.md).
 
 ## Threat model
 

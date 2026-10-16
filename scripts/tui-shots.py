@@ -210,6 +210,8 @@ def walk(tier: str, out: Path, session: bool) -> None:
         save(out, f"{tier}-settings-{name}", 120)
         leave()
     settings("requests")
+    if tier == "tier1":
+        keys("Down", pause=0.6)                                       # past "+ Request a deploy"
     save(out, f"{tier}-requests", 120)
     if tier == "tier2":
         save(out, f"{tier}-settings-approvals", 120)

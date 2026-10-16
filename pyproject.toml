@@ -11,7 +11,7 @@ dependencies = [
     # the farm app and the shared harness (audit chain, access rules, JSON tool
     # protocol, LangGraph graph, LLM provider) — tier-2 imports
     # new_horizons.shared.*, tier-1 develops a checkout of it
-    "new-horizons @ git+https://github.com/omarsoman/new-horizons",
+    "new-horizons @ git+https://github.com/Omisoman/new-horizons",
     # tier-2 A2A server
     "a2a-sdk[http-server]>=1.1",
     "uvicorn>=0.30",
@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/omarsoman/sojourner"
+Repository = "https://github.com/Omisoman/sojourner"
 
 [dependency-groups]
 dev = ["pytest>=8", "pytest-asyncio>=0.24", "import-linter>=2.1"]

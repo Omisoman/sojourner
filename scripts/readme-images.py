@@ -3,8 +3,10 @@
     uv run python scripts/tui-shots.py      # with the stack up
     uv run python scripts/readme-images.py
 
-  docs/shots/two-terminals.png  tier-1's Requests beside tier-2's Approvals
+  docs/shots/two-terminals.png  tier-1's Requests beside tier-2's Approvals, one request
   docs/shots/loop.png           staging's Patterns page beside New Horizons' Changes page
+
+Composites are capped at MAX_W px wide (the README's image budget).
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SHOTS = ROOT / "docs" / "shots"
 HORIZONS_SHOTS = ROOT.parent / "new-horizons" / "docs" / "shots"
 GAP, BG = 16, (12, 12, 13)
+MAX_W = 1600
 
 
 def side_by_side(left: Path, right: Path, out: Path, height: int | None = None) -> None:
@@ -27,6 +30,8 @@ def side_by_side(left: Path, right: Path, out: Path, height: int | None = None) 
     sheet = Image.new("RGB", (a.width + b.width + 3 * GAP, h + 2 * GAP), BG)
     sheet.paste(a, (GAP, GAP))
     sheet.paste(b, (a.width + 2 * GAP, GAP))
+    if sheet.width > MAX_W:
+        sheet = sheet.resize((MAX_W, round(sheet.height * MAX_W / sheet.width)), Image.LANCZOS)
     sheet.save(out, optimize=True)
     print(f"  {out.relative_to(ROOT)}  {sheet.width}x{sheet.height}")
 

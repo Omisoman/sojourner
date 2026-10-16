@@ -4,10 +4,17 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
-.import_linter_cache/
 node_modules/
 bun.lock
 dist/
 .DS_Store
 *.log
 docs/shots/tmp/
+
+# local AI-tooling files: kept on disk, never tracked. Root only for AGENTS.md:
+# tier1/AGENTS.md and tier2/AGENTS.md are the tiers' own rules (product files)
+CLAUDE.md
+.claude/
+/AGENTS.md
+.cursor/
+.import_linter_cache/

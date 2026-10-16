@@ -113,7 +113,7 @@ model list and never the default. Serve Ollama with New Horizons'
 
 ## Data
 
-Sojourner has no data of its own. Its staging target is New Horizons, which runs on the synthetic aquaponics dataset described in [`../new-horizons/README.md#data`](https://github.com/Omisoman/new-horizons#data). Nothing in this repository derives from a client engagement.
+Sojourner has no data of its own. Its staging target is New Horizons, which runs on the synthetic aquaponics dataset described in [`../new-horizons/README.md#data`](https://github.com/Omisoman/new-horizons#data). No client data, names, branding or configuration are in this repository; the dataset and the staging target are the synthetic New Horizons farm.
 
 ## Example
 

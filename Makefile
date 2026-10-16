@@ -9,7 +9,7 @@ HORIZONS ?= ../new-horizons
 # without this a lane switch rewrites .env and the tiers keep dialling host Ollama.
 COMPOSE_ENV := $(if $(wildcard .env),--env-file .env,)
 COMPOSE := docker compose $(COMPOSE_ENV) -f infra/compose/docker-compose.yml
-CLIENT_WORDS := j[i]co|jerusal[e]m|القد[س]|ins[u]r|cl[a]im|pol[i]cy|gar[a]ge|adjust[e]r|IB[A]N|tar[i]ff|J[O]D
+CLIENT_WORDS := j[i]co|j[e]rusal[e]m|القد[س]|ins[u]r|cl[a]im|pol[i]cy|gar[a]ge|adjust[e]r|IB[A]N|tar[i]ff|J[O]D
 
 .PHONY: demo2-build demo2-up demo2-down demo2-reset demo2-attach demo2-ops demo2-verify deepseek-tools \
         test lint core brand books client-free llm-target

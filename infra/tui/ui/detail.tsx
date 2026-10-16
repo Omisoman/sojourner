@@ -204,10 +204,13 @@ export function taskAbout(t: Task, state: string): About {
 
 function CoverCard(props: { cover: Cover; width: number }) {
   const c = () => props.cover;
+  // kind and tag share the top line when both fit inside the border and padding;
+  // otherwise the tag drops below the kind instead of overprinting it
+  const oneLine = () => !c().tag || c().kind.length + 1 + c().tag!.length <= props.width - 4;
   return (
     <box flexDirection="column" width={props.width} flexShrink={0} border borderStyle="rounded"
          borderColor={C.border} paddingLeft={1} paddingRight={1} overflow="hidden">
-      <box flexDirection="row" justifyContent="space-between" flexShrink={0}>
+      <box flexDirection={oneLine() ? "row" : "column"} justifyContent="space-between" flexShrink={0}>
         <text fg={C.accent} attributes={BOLD} wrapMode="none">{c().kind}</text>
         <Show when={c().tag}><text fg={c().tagFg ?? C.muted} wrapMode="none">{c().tag}</text></Show>
       </box>

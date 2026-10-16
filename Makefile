@@ -2,7 +2,7 @@
 # Never run new-horizons' `make demo1` and this stack together (16 GB
 # budget). Postgres alone is fine: both repos use New Horizons' container and volume.
 
-SHELL := /bin/zsh
+SHELL := /bin/bash
 UV    ?= uv
 HORIZONS ?= ../new-horizons
 # compose resolves .env from the COMPOSE FILE's directory, not the repo root, so

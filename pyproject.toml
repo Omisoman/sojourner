@@ -1,6 +1,6 @@
 [project]
 name = "sojourner"
-version = "0.1.0"
+version = "1.0.0"
 description = "Two-tier governed developer harness — an OpenCode sandbox and an A2A ops agent — that develops, gates and deploys new-horizons"
 readme = "README.md"
 license = "MIT"
